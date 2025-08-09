@@ -1,0 +1,41 @@
+name: Create Release
+
+# workflow_dispatchで手動実行可能にする
+on: [workflow_dispatch]
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    # GitHubリポジトリへの書き込み権限を付与
+    permissions:
+      contents: write
+
+    timeout-minutes: 5
+
+    env:
+      # GitHub CLIで使用するトークン
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # 日本時間でタグを生成するためタイムゾーンを設定
+      TZ: "Asia/Tokyo"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Release
+        run: |
+          # 最新リリースのタグを取得
+          pre_tag=$(gh api /repos/${{ github.repository }}/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
+
+          # 新しいタグを生成（YYYY.MM.DD-N形式）
+          IFS='-' read -r pre_release_date pre_release_count <<< "$pre_tag"
+          today=$(date +'%Y.%m.%d')
+          if [[ "$pre_release_date" != "$today" ]]; then
+            pre_release_count=0
+          fi
+          release_tag="$today-$(($pre_release_count + 1))"
+
+          # リリースのドラフトを作成
+          gh release create $release_tag --generate-notes --draft

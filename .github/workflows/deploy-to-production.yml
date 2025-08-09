@@ -1,0 +1,40 @@
+name: Deploy to Production
+
+on:
+  release:
+    # publishedイベントでトリガー（下書きからの公開時）
+    types: [published]
+
+jobs:
+  deploy-to-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup deployment environment
+        run: |
+          echo "Setting up deployment environment..."
+          echo "Release tag: ${{ github.event.release.tag_name }}"
+          echo "Release name: ${{ github.event.release.name }}"
+
+      # ここから実際のデプロイ処理を記述
+      # 例：Node.jsプロジェクトの場合
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '22'
+      #
+      # - name: Install dependencies
+      #   run: npm ci
+      #
+      # - name: Build
+      #   run: npm run build
+      #
+      # - name: Deploy to production
+      #   run: |
+      #     # デプロイコマンドの実行
+      #     # 例：S3へのアップロード、サーバーへのデプロイなど
